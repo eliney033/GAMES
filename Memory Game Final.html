@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Card Master - 100 Levels</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 50%, #064e3b 0%, #022c22 60%, #011710 100%);
+      --panel-bg: rgba(6, 78, 59, 0.45);
+      --panel-border: rgba(52, 211, 153, 0.3);
+      --card-front: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      --card-back: rgba(6, 44, 34, 0.95);
+      --accent-glow: #34d399;
+      --text-main: #ecfdf5;
+      --card-border: rgba(52, 211, 153, 0.5);
+    }
+
+    [data-theme="cosmic"] {
+      --bg-gradient: radial-gradient(circle at 50% 50%, #4c1d95 0%, #1e1b4b 60%, #0f172a 100%);
+      --panel-bg: rgba(76, 29, 149, 0.45);
+      --panel-border: rgba(192, 132, 252, 0.3);
+      --card-front: linear-gradient(135deg, #a855f7 0%, #6b21a8 100%);
+      --card-back: rgba(30, 27, 75, 0.95);
+      --accent-glow: #c084fc;
+      --text-main: #faf5ff;
+      --card-border: rgba(192, 132, 252, 0.5);
+    }
+
+    [data-theme="cyber"] {
+      --bg-gradient: radial-gradient(circle at 50% 50%, #155e75 0%, #082f49 60%, #020617 100%);
+      --panel-bg: rgba(21, 94, 117, 0.45);
+      --panel-border: rgba(34, 211, 238, 0.3);
+      --card-front: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
+      --card-back: rgba(8, 47, 73, 0.95);
+      --accent-glow: #22d3ee;
+      --text-main: #ecfeff;
+      --card-border: rgba(34, 211, 238, 0.5);
+    }
+
+    [data-theme="sunset"] {
+      --bg-gradient: radial-gradient(circle at 50% 50%, #831843 0%, #500724 60%, #18020c 100%);
+      --panel-bg: rgba(131, 24, 67, 0.45);
+      --panel-border: rgba(251, 146, 60, 0.3);
+      --card-front: linear-gradient(135deg, #f97316 0%, #be123c 100%);
+      --card-back: rgba(80, 7, 36, 0.95);
+      --accent-glow: #fbbf24;
+      --text-main: #fff7ed;
+      --card-border: rgba(251, 146, 60, 0.5);
+    }
+
+    [data-theme="volcano"] {
+      --bg-gradient: radial-gradient(circle at 50% 50%, #7f1d1d 0%, #450a0a 60%, #0f0202 100%);
+      --panel-bg: rgba(127, 29, 29, 0.45);
+      --panel-border: rgba(248, 113, 113, 0.3);
+      --card-front: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+      --card-back: rgba(69, 10, 10, 0.95);
+      --accent-glow: #f87171;
+      --text-main: #fef2f2;
+      --card-border: rgba(248, 113, 113, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      overflow-x: hidden;
+      transition: background 0.6s ease;
+    }
+
+    .glass-panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      border-radius: 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+      padding: 16px 24px;
+      width: 100%;
+      max-width: 650px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-shadow: 0 0 12px var(--accent-glow);
+      margin-bottom: 8px;
+    }
+
+    .header-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .level-select-container, .theme-select-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    select {
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--text-main);
+      border: 1px solid var(--panel-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    select option {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    select:hover {
+      border-color: var(--accent-glow);
+    }
+
+    .stats-container {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 650px;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 10px 20px;
+    }
+
+    .stats-item span {
+      color: var(--accent-glow);
+      font-size: 1.1rem;
+    }
+
+    .game-board {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .card {
+      aspect-ratio: 1;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      border: 2px solid var(--card-border);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .card-front {
+      background: var(--card-front);
+      color: #ffffff;
+      font-size: clamp(1rem, 3.5vw, 1.8rem);
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      z-index: 2;
+    }
+
+    .card-back {
+      background: var(--card-back);
+      backdrop-filter: blur(8px);
+      font-size: clamp(1.2rem, 4vw, 2.2rem);
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .card.flipped .card-front,
+    .card.matched .card-front {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .card.flipped .card-back,
+    .card.matched .card-back {
+      opacity: 1;
+      z-index: 3;
+      pointer-events: auto;
+    }
+
+    .card.matched {
+      cursor: default;
+    }
+
+    .card.matched .card-back {
+      border-color: var(--accent-glow);
+      background: rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      background: var(--card-front);
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.15);
+      box-shadow: 0 6px 16px var(--panel-border);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .win-message {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .win-message.active {
+      display: flex;
+    }
+
+    .win-content {
+      padding: 35px 45px;
+      text-align: center;
+      max-width: 90%;
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .win-content h2 {
+      font-size: 2.2rem;
+      color: var(--accent-glow);
+      text-shadow: 0 0 10px var(--accent-glow);
+      margin-bottom: 12px;
+    }
+
+    .win-content p {
+      margin-bottom: 24px;
+      font-size: 1.1rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 100px;
+      height: 10px;
+      border-radius: 50%;
+      animation: fall 2.5s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body data-theme="emerald">
+
+  <header class="glass-panel">
+    <h1>MEMORY MASTER</h1>
+    <div class="header-controls">
+      <div class="level-select-container">
+        <label for="levelSelect"><strong>Level:</strong></label>
+        <select id="levelSelect" onchange="changeLevel(this.value)"></select>
+      </div>
+
+      <div class="theme-select-container">
+        <label for="themeSelect"><strong>Theme:</strong></label>
+        <select id="themeSelect" onchange="changeTheme(this.value)">
+          <option value="emerald">🌲 Emerald</option>
+          <option value="cosmic">🌌 Cosmic</option>
+          <option value="cyber">⚡ Cyber</option>
+          <option value="sunset">🌅 Sunset</option>
+          <option value="volcano">🌋 Volcano</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats-container glass-panel">
+    <div class="stats-item">Pairs: <span id="pairsCount">0/0</span></div>
+    <div class="stats-item">Moves: <span id="moves">0</span></div>
+    <div class="stats-item">Time: <span id="timer">00m 00s</span></div>
+  </div>
+
+  <div class="game-board" id="board"></div>
+
+  <div class="controls">
+    <button id="prevBtn" onclick="prevLevel()">⬅ Prev Level</button>
+    <button onclick="resetGame()">Restart</button>
+    <button id="nextBtn" onclick="nextLevel()">Next Level ➔</button>
+  </div>
+
+  <div class="win-message" id="winModal">
+    <div class="win-content glass-panel">
+      <h2 id="winTitle">🎉 LEVEL CLEARED!</h2>
+      <p id="winStats">Completed in 0 moves and 00m 00s.</p>
+      <div class="modal-buttons">
+        <button id="modalPrevBtn" onclick="prevLevel()">⬅ Prev Level</button>
+        <button onclick="resetGame()">Replay</button>
+        <button id="modalNextBtn" onclick="nextLevel()">Next Level ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EMOJI_POOL = [
+      '🚀', '🎨', '🍕', '🎮', '🦄', '🎧', '⚡', '🐱', '🥑', '⚽',
+      '🌮', '🎸', '🍩', '🎯', '🏀', '🦁', '🍦', '🚗', '🤖', '👑',
+      '🔥', '💎', '🍿', '🎲', '🌈', '🏆', '🏄', '🔮', '🧸', '🛵',
+      '🛸', '🎆', '🥨', '🎳', '🦊', '🪐', '🌋', '⛺', '⚓', '🍉',
+      '🍔', '🎁', '🎈', '🎉', '🎤', '♟️', '🧩', '👻', '🎃', '🦖',
+      '🐬', '🌺', '🐝', '🦀', '🦜', '🦩', '🦔', '🦥', '🦦', '🦉'
+    ];
+
+    function getStoredVal(key, fallback) {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? parseInt(val, 10) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function setStoredVal(key, val) {
+      try {
+        localStorage.setItem(key, val);
+      } catch (e) {}
+    }
+
+    let currentLevel = 1;
+    let earnedProgress = getStoredVal('memory_earned_progress', 1);
+    if (isNaN(earnedProgress) || earnedProgress < 1) earnedProgress = 1;
+
+    const MAX_LEVELS = 100;
+
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let totalPairs = 0;
+    let moves = 0;
+    let timer = null;
+    let totalSeconds = 0;
+    let gameStarted = false;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'flip') {
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      } else if (type === 'match') {
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } else if (type === 'win') {
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+      }
+    }
+
+    const boardElement = document.getElementById('board');
+    const movesElement = document.getElementById('moves');
+    const timerElement = document.getElementById('timer');
+    const pairsCountElement = document.getElementById('pairsCount');
+    const levelSelect = document.getElementById('levelSelect');
+    const winModal = document.getElementById('winModal');
+    const winStats = document.getElementById('winStats');
+    const winTitle = document.getElementById('winTitle');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const modalPrevBtn = document.getElementById('modalPrevBtn');
+    const modalNextBtn = document.getElementById('modalNextBtn');
+
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      const pad = (num) => String(num).padStart(2, '0');
+      return hrs > 0 ? `${pad(hrs)}h ${pad(mins)}m ${pad(secs)}s` : `${pad(mins)}m ${pad(secs)}s`;
+    }
+
+    function changeTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      try { localStorage.setItem('memory_game_theme', theme); } catch(e){}
+    }
+
+    function canAccessLevel(lvl) {
+      if (lvl < 1 || lvl > MAX_LEVELS) return false;
+      return lvl <= earnedProgress;
+    }
+
+    function populateLevelSelect() {
+      levelSelect.innerHTML = '';
+
+      for (let i = 1; i <= MAX_LEVELS; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        const allowed = canAccessLevel(i);
+        option.textContent = allowed ? `Level ${i}` : `Level ${i} 🔒`;
+        option.disabled = !allowed;
+        levelSelect.appendChild(option);
+      }
+
+      levelSelect.value = currentLevel;
+    }
+
+    function getLevelConfig(level) {
+      let pairs;
+      if (level === 1) pairs = 2;
+      else if (level === 2) pairs = 3;
+      else if (level === 3) pairs = 4;
+      else if (level === 4) pairs = 5;
+      else if (level === 5) pairs = 6;
+      else {
+        pairs = Math.min(6 + Math.floor((level - 5) * 0.25), 30);
+      }
+
+      const totalCards = pairs * 2;
+      let cols = 2;
+      if (totalCards >= 36) cols = 6;
+      else if (totalCards >= 20) cols = 5;
+      else if (totalCards >= 12) cols = 4;
+      else if (totalCards >= 6) cols = 3;
+      return { pairs, cols };
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createBoard() {
+      const config = getLevelConfig(currentLevel);
+      totalPairs = config.pairs;
+      
+      const selectedEmojis = EMOJI_POOL.slice(0, totalPairs);
+      const cardPairs = shuffle([...selectedEmojis, ...selectedEmojis]);
+
+      boardElement.innerHTML = '';
+      boardElement.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+
+      cards = cardPairs.map((symbol) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.symbol = symbol;
+
+        card.innerHTML = `
+          <div class="card-face card-front">?</div>
+          <div class="card-face card-back">${symbol}</div>
+        `;
+
+        card.addEventListener('click', () => handleCardClick(card));
+        boardElement.appendChild(card);
+        return card;
+      });
+
+      updateUIState();
+    }
+
+    function updateUIState() {
+      pairsCountElement.textContent = `${matchedPairs}/${totalPairs}`;
+      movesElement.textContent = moves;
+      timerElement.textContent = formatTime(totalSeconds);
+
+      const canPrev = currentLevel > 1;
+      const canNext = canAccessLevel(currentLevel + 1);
+
+      prevBtn.disabled = !canPrev;
+      modalPrevBtn.disabled = !canPrev;
+      nextBtn.disabled = !canNext;
+      modalNextBtn.disabled = !canNext;
+
+      levelSelect.value = currentLevel;
+    }
+
+    function startTimer() {
+      if (!gameStarted) {
+        gameStarted = true;
+        timer = setInterval(() => {
+          totalSeconds++;
+          timerElement.textContent = formatTime(totalSeconds);
+        }, 1000);
+      }
+    }
+
+    function handleCardClick(card) {
+      if (
+        card.classList.contains('flipped') ||
+        card.classList.contains('matched') ||
+        flippedCards.length === 2
+      ) {
+        return;
+      }
+
+      playSound('flip');
+      startTimer();
+
+      card.classList.add('flipped');
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        moves++;
+        movesElement.textContent = moves;
+        checkMatch();
+      }
+    }
+
+    function checkMatch() {
+      const [card1, card2] = flippedCards;
+      const isMatch = card1.dataset.symbol === card2.dataset.symbol;
+
+      if (isMatch) {
+        playSound('match');
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        
+        matchedPairs++;
+        pairsCountElement.textContent = `${matchedPairs}/${totalPairs}`;
+        flippedCards = [];
+
+        if (matchedPairs === totalPairs) {
+          endGame();
+        }
+      } else {
+        setTimeout(() => {
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
+          flippedCards = [];
+        }, 800);
+      }
+    }
+
+    function triggerConfetti() {
+      const colors = ['#34d399', '#c084fc', '#22d3ee', '#fbbf24', '#f43f5e'];
+      for (let i = 0; i < 40; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('confetti');
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.animationDuration = (Math.random() * 1.5 + 1.5) + 's';
+        document.body.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 2500);
+      }
+    }
+
+    function endGame() {
+      clearInterval(timer);
+      playSound('win');
+      triggerConfetti();
+
+      if (currentLevel >= earnedProgress && currentLevel < MAX_LEVELS) {
+        earnedProgress = currentLevel + 1;
+        setStoredVal('memory_earned_progress', earnedProgress);
+      }
+
+      populateLevelSelect();
+
+      setTimeout(() => {
+        winStats.textContent = `Completed Level ${currentLevel} in ${moves} moves and ${formatTime(totalSeconds)}.`;
+        winTitle.textContent = currentLevel < MAX_LEVELS ? `🎉 LEVEL ${currentLevel} CLEARED!` : `🏆 ALL 100 LEVELS MASTERED!`;
+        updateUIState();
+        winModal.classList.add('active');
+      }, 500);
+    }
+
+    function changeLevel(newLevel) {
+      const lvl = parseInt(newLevel, 10);
+      if (canAccessLevel(lvl)) {
+        currentLevel = lvl;
+        resetGame();
+      }
+    }
+
+    function prevLevel() {
+      if (currentLevel > 1) changeLevel(currentLevel - 1);
+    }
+
+    function nextLevel() {
+      if (canAccessLevel(currentLevel + 1)) changeLevel(currentLevel + 1);
+    }
+
+    function resetGame() {
+      clearInterval(timer);
+      timer = null;
+      totalSeconds = 0;
+      moves = 0;
+      matchedPairs = 0;
+      flippedCards = [];
+      gameStarted = false;
+
+      winModal.classList.remove('active');
+      createBoard();
+    }
+
+    try {
+      const savedTheme = localStorage.getItem('memory_game_theme') || 'emerald';
+      document.getElementById('themeSelect').value = savedTheme;
+      changeTheme(savedTheme);
+    } catch(e){}
+
+    populateLevelSelect();
+    createBoard();
+  </script>
+</body>
+</html>
